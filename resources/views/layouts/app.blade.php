@@ -67,6 +67,9 @@
                 </a>
 
                 <nav class="order-2 ml-auto flex shrink-0 items-center gap-1 text-xs sm:gap-2 sm:text-sm">
+                    <a href="{{ route('charts.index') }}" class="hidden rounded-lg border border-white/15 px-2.5 py-2 hover:bg-white/5 sm:inline-flex sm:px-3">Charts</a>
+                    <a href="{{ route('shorts.index') }}" class="hidden rounded-lg border border-white/15 px-2.5 py-2 hover:bg-white/5 sm:inline-flex sm:px-3">Shorts</a>
+                    <a href="{{ route('fan-groups.index') }}" class="hidden rounded-lg border border-white/15 px-2.5 py-2 hover:bg-white/5 md:inline-flex sm:px-3">Groups</a>
                     @guest
                         @if (Route::has('login'))
                             <a href="{{ route('login') }}" class="rounded-lg border border-white/15 px-2.5 py-2 hover:bg-white/5 sm:px-3">Login</a>

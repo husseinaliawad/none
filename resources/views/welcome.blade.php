@@ -13,6 +13,57 @@
 
 @section('content')
 <section class="space-y-8">
+    @php
+        $userLevel = (int) optional(optional(auth()->user())->progress)->current_level;
+    @endphp
+
+    <section class="rounded-2xl border border-white/10 bg-panel/70 p-4 sm:p-5">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h2 class="text-lg font-bold text-white">Level Unlocks</h2>
+                <p class="mt-1 text-xs text-muted">
+                    @auth
+                        Your level: {{ max($userLevel, 1) }} • Keep watching to unlock more content.
+                    @else
+                        Sign in to start leveling up and unlock exclusive drops.
+                    @endauth
+                </p>
+            </div>
+            <div class="flex gap-2">
+                <a href="{{ route('charts.index') }}" class="rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/5">Open Charts</a>
+                <a href="{{ route('shorts.index') }}" class="rounded-lg border border-white/15 px-3 py-2 text-xs font-semibold text-white hover:bg-white/5">Open Shorts</a>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-lg font-bold tracking-wide text-white sm:text-xl">For You</h2>
+            <span class="text-xs uppercase tracking-wide text-muted">AI Ranked</span>
+        </div>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            @forelse($forYouFeed as $row)
+                @php
+                    $item = $row['item'];
+                    $isEmbedded = $row['type'] === 'embedded';
+                    $url = $isEmbedded ? route('embed.watch', $item) : route('video.watch', $item);
+                    $thumbnail = $isEmbedded
+                        ? ($item->thumbnail_url ?: 'https://placehold.co/640x360/111827/9ca3af?text=Embedded')
+                        : ($item->thumbnail_image ? asset('videos/' . $item->uid . '/' . $item->thumbnail_image) : 'https://placehold.co/640x360/111827/9ca3af?text=No+Thumbnail');
+                @endphp
+                <a href="{{ $url }}" class="block overflow-hidden rounded-xl border border-white/10 bg-panel/80 hover:-translate-y-1 hover:shadow-glow">
+                    <img src="{{ $thumbnail }}" class="aspect-video w-full object-cover" alt="{{ $item->title }}">
+                    <div class="p-3">
+                        <h3 class="truncate text-sm font-semibold text-white">{{ $item->title }}</h3>
+                        <p class="mt-1 text-xs text-muted">{{ $isEmbedded ? $item->source_name : optional($item->channel)->name }}</p>
+                    </div>
+                </a>
+            @empty
+                <p class="col-span-full rounded-xl border border-white/10 bg-panel p-5 text-sm text-muted">No personalized items yet.</p>
+            @endforelse
+        </div>
+    </section>
+
     <section>
         <div class="mb-4 flex items-center justify-between">
             <h2 class="text-lg font-bold tracking-wide text-white sm:text-xl">Embedded Videos</h2>

@@ -14,6 +14,10 @@ class Video extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'preview_timeline' => 'array',
+    ];
+
 
     public function channel()
     {

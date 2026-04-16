@@ -8,6 +8,8 @@ use App\Http\Requests\Admin\PreviewEmbedRequest;
 use App\Http\Requests\Admin\StoreEmbeddedVideoRequest;
 use App\Http\Requests\Admin\UpdateEmbeddedVideoRequest;
 use App\Models\EmbeddedVideo;
+use App\Models\Performer;
+use App\Models\Tag;
 use App\Services\EmbedSourceValidator;
 use App\Services\VideoImportService;
 use Illuminate\Http\RedirectResponse;
@@ -58,7 +60,9 @@ class EmbeddedVideoController extends Controller
 
     public function create()
     {
-        return view('admin.videos.create');
+        $performers = Performer::query()->where('is_active', true)->orderBy('name')->get();
+
+        return view('admin.videos.create', compact('performers'));
     }
 
     public function store(StoreEmbeddedVideoRequest $request): RedirectResponse
@@ -72,12 +76,14 @@ class EmbeddedVideoController extends Controller
 
         $status = $request->input('status', 'draft');
 
-        EmbeddedVideo::create([
+        $video = EmbeddedVideo::create([
             'title' => $request->input('title'),
             'slug' => $this->videoImportService->makeUniqueSlug($request->input('slug') ?: Str::slug($request->input('title'))),
             'description' => $request->input('description'),
             'thumbnail_url' => $request->input('thumbnail_url'),
             'embed_url' => $normalized['embed_url'],
+            'storyboard_vtt_url' => $request->input('storyboard_vtt_url'),
+            'storyboard_sprite_url' => $request->input('storyboard_sprite_url'),
             'source_name' => $request->input('source_name') ?: $normalized['source_name'],
             'source_video_id' => $sourceVideoId,
             'category' => $request->input('category'),
@@ -90,16 +96,23 @@ class EmbeddedVideoController extends Controller
             'updated_by' => $request->user()->id,
         ]);
 
+        $this->syncTagsCloud($video, $request->input('tags'));
+        $this->syncPerformers($video, $request->input('performer_ids', []));
+
         return redirect()->route('admin.videos.index')->with('status', 'Video created successfully.');
     }
 
     public function edit(EmbeddedVideo $video)
     {
-        return view('admin.videos.edit', compact('video'));
+        $video->loadMissing('performers');
+        $performers = Performer::query()->where('is_active', true)->orderBy('name')->get();
+
+        return view('admin.videos.edit', compact('video', 'performers'));
     }
 
     public function show(EmbeddedVideo $video)
     {
+        $video->loadMissing('performers');
         $similarVideos = EmbeddedVideo::query()
             ->where('id', '!=', $video->id)
             ->when($video->category, fn ($query) => $query->where('category', $video->category))
@@ -127,6 +140,8 @@ class EmbeddedVideoController extends Controller
             'description' => $request->input('description'),
             'thumbnail_url' => $request->input('thumbnail_url'),
             'embed_url' => $normalized['embed_url'],
+            'storyboard_vtt_url' => $request->input('storyboard_vtt_url'),
+            'storyboard_sprite_url' => $request->input('storyboard_sprite_url'),
             'source_name' => $request->input('source_name') ?: $normalized['source_name'],
             'source_video_id' => $sourceVideoId,
             'category' => $request->input('category'),
@@ -137,6 +152,9 @@ class EmbeddedVideoController extends Controller
                 : null,
             'updated_by' => $request->user()->id,
         ]);
+
+        $this->syncTagsCloud($video, $request->input('tags'));
+        $this->syncPerformers($video, $request->input('performer_ids', []));
 
         return redirect()->route('admin.videos.index')->with('status', 'Video updated successfully.');
     }
@@ -243,5 +261,32 @@ class EmbeddedVideoController extends Controller
                 'source_video_id' => 'Duplicate video detected by source_video_id.',
             ]);
         }
+    }
+
+    protected function syncTagsCloud(EmbeddedVideo $video, ?string $tags): void
+    {
+        $parsed = $this->parseTags($tags);
+        $sync = [];
+
+        foreach ($parsed as $name) {
+            $tag = Tag::firstOrCreate(
+                ['slug' => Str::slug($name)],
+                ['name' => $name, 'weight' => 1]
+            );
+
+            $sync[$tag->id] = ['score' => 1];
+        }
+
+        $video->tagsCloud()->sync($sync);
+    }
+
+    protected function syncPerformers(EmbeddedVideo $video, array $performerIds): void
+    {
+        $sync = collect($performerIds)
+            ->filter()
+            ->mapWithKeys(fn ($id) => [(int) $id => ['role_name' => 'performer']])
+            ->all();
+
+        $video->performers()->sync($sync);
     }
 }

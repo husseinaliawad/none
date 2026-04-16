@@ -48,5 +48,9 @@ class Performer extends Model
             ->withPivot('role_name')
             ->withTimestamps();
     }
-}
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+}

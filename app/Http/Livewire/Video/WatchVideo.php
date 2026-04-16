@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Video;
 use Livewire\Component;
 
 use App\Models\Video;
+use App\Services\UserProgressService;
 
 
 class WatchVideo extends Component
@@ -18,6 +19,10 @@ class WatchVideo extends Component
     public function mount(Video $video)
     {
         $this->video = $video;
+
+        if (auth()->check()) {
+            app(UserProgressService::class)->trackWatchSession(auth()->user(), 120);
+        }
     }
 
 

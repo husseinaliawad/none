@@ -15,10 +15,45 @@
                 <p class="mt-2 text-sm text-muted">
                     {{ $video->source_name }}{{ $video->published_at ? ' • ' . $video->published_at->diffForHumans() : '' }}
                 </p>
+                @auth
+                    <p class="mt-2 text-xs text-emerald-300">
+                        Rank: {{ optional(auth()->user()->progress)->current_level ?? 1 }} •
+                        Points: {{ optional(auth()->user()->progress)->points ?? 0 }}
+                    </p>
+                @endauth
                 @if($video->description)
                     <p class="mt-4 text-sm text-gray-300">{{ $video->description }}</p>
                 @endif
+                @if($video->performers->isNotEmpty())
+                    <p class="mt-3 text-xs text-muted">
+                        Performers:
+                        @foreach($video->performers as $performer)
+                            <a href="{{ route('performers.show', $performer) }}" class="text-emerald-300 hover:text-emerald-200">{{ $performer->name }}</a>@if(!$loop->last), @endif
+                        @endforeach
+                    </p>
+                @endif
+                @if(is_array($video->tags) && count($video->tags))
+                    <div class="mt-3 flex flex-wrap gap-1">
+                        @foreach($video->tags as $tag)
+                            <span class="rounded-full border border-white/15 px-2 py-1 text-[11px] text-gray-200">{{ $tag }}</span>
+                        @endforeach
+                    </div>
+                @endif
             </div>
+
+            @if(is_array($video->preview_timeline) && count($video->preview_timeline))
+                <div class="rounded-2xl border border-white/10 bg-panel p-4 sm:p-5">
+                    <h2 class="mb-3 text-base font-semibold text-white">Storyboard Preview</h2>
+                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+                        @foreach($video->preview_timeline as $frame)
+                            <div class="rounded-lg border border-white/10 bg-black/20 p-2">
+                                <img src="{{ $frame['thumbnail'] ?? 'https://placehold.co/320x180/111827/9ca3af?text=Frame' }}" class="aspect-video w-full rounded object-cover" alt="Frame">
+                                <p class="mt-1 text-[11px] text-muted">{{ $frame['at'] ?? '0s' }}</p>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
 
         <aside class="lg:col-span-4 xl:col-span-3">
@@ -39,4 +74,3 @@
     </div>
 </div>
 @endsection
-

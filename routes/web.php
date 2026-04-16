@@ -13,6 +13,11 @@ use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
 use App\Http\Controllers\Admin\ModulePagesController as AdminModulePagesController;
 use App\Http\Controllers\PerformerController;
+use App\Http\Controllers\EmbeddedWatchController;
+use App\Http\Controllers\FanGroupController;
+use App\Http\Controllers\ChartsController;
+use App\Http\Controllers\ShortsController;
+use App\Services\PersonalizedFeedService;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +31,8 @@ use App\Http\Controllers\PerformerController;
 */
 
 Route::get('/', function () {
+    $forYouFeed = app(PersonalizedFeedService::class)->buildForUser(auth()->user(), 18);
+
     try {
         $embeddedVideos = EmbeddedVideo::query()
             ->where('status', 'published')
@@ -74,6 +81,7 @@ Route::get('/', function () {
     return view('welcome', compact(
         'channels',
         'videos',
+        'forYouFeed',
         'trendingVideos',
         'latestVideos',
         'recommendedVideos',
@@ -97,21 +105,17 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/watch/{video}', 'App\Http\Livewire\Video\WatchVideo')->name('video.watch');
-Route::get('/watch/embed/{video:slug}', function (EmbeddedVideo $video) {
-    $relatedVideos = EmbeddedVideo::query()
-        ->where('id', '!=', $video->id)
-        ->where('status', 'published')
-        ->latest('published_at')
-        ->take(10)
-        ->get();
-
-    return view('embed.watch', compact('video', 'relatedVideos'));
-})->name('embed.watch');
+Route::get('/watch/embed/{video:slug}', [EmbeddedWatchController::class, 'show'])->name('embed.watch');
 
 Route::get('/channels/{channel}', [App\Http\Controllers\ChannelController::class, 'index'])->name('channel.index');
 
 Route::get('/search/', [App\Http\Controllers\SearchController::class, 'search'])->name('search');
 Route::get('/performers/{performer:slug}', [PerformerController::class, 'show'])->name('performers.show');
+Route::get('/fan-groups', [FanGroupController::class, 'index'])->name('fan-groups.index');
+Route::get('/fan-groups/{group:slug}', [FanGroupController::class, 'show'])->name('fan-groups.show');
+Route::post('/fan-groups/{group:slug}/join', [FanGroupController::class, 'join'])->name('fan-groups.join');
+Route::get('/charts', [ChartsController::class, 'index'])->name('charts.index');
+Route::get('/shorts', [ShortsController::class, 'index'])->name('shorts.index');
 
 Route::prefix('admin')
     ->name('admin.')
@@ -139,6 +143,7 @@ Route::prefix('admin')
         Route::get('/imports/{import}', [AdminVideoImportController::class, 'show'])->name('imports.show');
 
         Route::get('/analytics', [AdminAnalyticsController::class, 'index'])->name('analytics.index');
+        Route::resource('performers', \App\Http\Controllers\Admin\PerformerController::class)->except('show');
         Route::get('/categories', [AdminModulePagesController::class, 'categories'])->name('categories.index');
         Route::get('/tags', [AdminModulePagesController::class, 'tags'])->name('tags.index');
         Route::get('/reports', [AdminModulePagesController::class, 'reports'])->name('reports.index');

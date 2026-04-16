@@ -22,6 +22,7 @@
                 ],
                 'Content' => [
                     ['route' => 'admin.videos.index', 'label' => 'Videos'],
+                    ['route' => 'admin.performers.index', 'label' => 'Performers'],
                     ['route' => 'admin.categories.index', 'label' => 'Categories'],
                     ['route' => 'admin.tags.index', 'label' => 'Tags'],
                     ['route' => 'admin.comments.index', 'label' => 'Comments'],

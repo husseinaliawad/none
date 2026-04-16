@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -87,6 +89,18 @@ class User extends Authenticatable
     public function comments()
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public function progress(): HasOne
+    {
+        return $this->hasOne(UserProgress::class);
+    }
+
+    public function fanGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(FanGroup::class, 'fan_group_members')
+            ->withPivot('role', 'joined_at')
+            ->withTimestamps();
     }
 
 }

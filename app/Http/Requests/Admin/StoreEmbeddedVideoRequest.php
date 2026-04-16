@@ -35,6 +35,10 @@ class StoreEmbeddedVideoRequest extends FormRequest
             'source_video_id' => ['nullable', 'string', 'max:255'],
             'category' => ['nullable', 'string', 'max:120'],
             'tags' => ['nullable', 'string'],
+            'performer_ids' => ['nullable', 'array'],
+            'performer_ids.*' => ['integer', 'exists:performers,id'],
+            'storyboard_vtt_url' => ['nullable', 'url', 'max:2048'],
+            'storyboard_sprite_url' => ['nullable', 'url', 'max:2048'],
             'status' => ['required', Rule::in(['draft', 'published'])],
             'published_at' => ['nullable', 'date'],
         ];

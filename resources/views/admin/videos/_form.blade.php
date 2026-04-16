@@ -29,6 +29,16 @@
         <input type="text" name="source_name" value="{{ old('source_name', $video->source_name ?? '') }}" class="mt-1 w-full rounded-xl border border-admin-border bg-admin-cardSoft px-3 py-2.5 text-sm text-white">
     </div>
 
+    <div>
+        <label class="block text-xs font-semibold uppercase tracking-wide text-admin-muted">Storyboard VTT URL</label>
+        <input type="url" name="storyboard_vtt_url" value="{{ old('storyboard_vtt_url', $video->storyboard_vtt_url ?? '') }}" class="mt-1 w-full rounded-xl border border-admin-border bg-admin-cardSoft px-3 py-2.5 text-sm text-white">
+    </div>
+
+    <div>
+        <label class="block text-xs font-semibold uppercase tracking-wide text-admin-muted">Storyboard Sprite URL</label>
+        <input type="url" name="storyboard_sprite_url" value="{{ old('storyboard_sprite_url', $video->storyboard_sprite_url ?? '') }}" class="mt-1 w-full rounded-xl border border-admin-border bg-admin-cardSoft px-3 py-2.5 text-sm text-white">
+    </div>
+
     <div class="md:col-span-2">
         <label class="block text-xs font-semibold uppercase tracking-wide text-admin-muted">Embed URL or iframe code</label>
         <div class="mt-1 flex gap-2">
@@ -45,6 +55,19 @@
     <div>
         <label class="block text-xs font-semibold uppercase tracking-wide text-admin-muted">Tags (comma separated)</label>
         <input type="text" name="tags" value="{{ old('tags', isset($video) ? implode(',', $video->tags ?? []) : '') }}" class="mt-1 w-full rounded-xl border border-admin-border bg-admin-cardSoft px-3 py-2.5 text-sm text-white">
+    </div>
+
+    <div class="md:col-span-2">
+        <label class="block text-xs font-semibold uppercase tracking-wide text-admin-muted">Performers</label>
+        @php
+            $selectedPerformers = old('performer_ids', isset($video) ? $video->performers->pluck('id')->all() : []);
+        @endphp
+        <select name="performer_ids[]" multiple class="mt-1 min-h-[120px] w-full rounded-xl border border-admin-border bg-admin-cardSoft px-3 py-2.5 text-sm text-white">
+            @foreach(($performers ?? collect()) as $performer)
+                <option value="{{ $performer->id }}" @selected(in_array($performer->id, $selectedPerformers))>{{ $performer->name }}</option>
+            @endforeach
+        </select>
+        <p class="mt-1 text-xs text-admin-muted">Use Ctrl/Cmd click to select multiple performers.</p>
     </div>
 
     <div>
