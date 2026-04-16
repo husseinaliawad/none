@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\CommentManagementController as AdminCommentManage
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
 use App\Http\Controllers\Admin\ModulePagesController as AdminModulePagesController;
+use App\Http\Controllers\PerformerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -110,6 +111,7 @@ Route::get('/watch/embed/{video:slug}', function (EmbeddedVideo $video) {
 Route::get('/channels/{channel}', [App\Http\Controllers\ChannelController::class, 'index'])->name('channel.index');
 
 Route::get('/search/', [App\Http\Controllers\SearchController::class, 'search'])->name('search');
+Route::get('/performers/{performer:slug}', [PerformerController::class, 'show'])->name('performers.show');
 
 Route::prefix('admin')
     ->name('admin.')

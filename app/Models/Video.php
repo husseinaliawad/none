@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 
 class Video extends Model
@@ -78,6 +79,20 @@ class Video extends Model
     public function AllCommentsCount()
     {
         return $this->hasMany(Comment::class)->count();
+    }
+
+    public function performers(): MorphToMany
+    {
+        return $this->morphToMany(Performer::class, 'performerable')
+            ->withPivot('role_name')
+            ->withTimestamps();
+    }
+
+    public function tagsCloud(): MorphToMany
+    {
+        return $this->morphToMany(Tag::class, 'taggable')
+            ->withPivot('score')
+            ->withTimestamps();
     }
 
 }

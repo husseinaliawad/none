@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Str;
 
 class EmbeddedVideo extends Model
@@ -17,6 +18,9 @@ class EmbeddedVideo extends Model
         'description',
         'thumbnail_url',
         'embed_url',
+        'storyboard_vtt_url',
+        'storyboard_sprite_url',
+        'preview_timeline',
         'source_name',
         'source_video_id',
         'category',
@@ -29,6 +33,7 @@ class EmbeddedVideo extends Model
 
     protected $casts = [
         'tags' => 'array',
+        'preview_timeline' => 'array',
         'published_at' => 'datetime',
     ];
 
@@ -49,5 +54,19 @@ class EmbeddedVideo extends Model
     public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function performers(): MorphToMany
+    {
+        return $this->morphToMany(Performer::class, 'performerable')
+            ->withPivot('role_name')
+            ->withTimestamps();
+    }
+
+    public function tagsCloud(): MorphToMany
+    {
+        return $this->morphToMany(Tag::class, 'taggable')
+            ->withPivot('score')
+            ->withTimestamps();
     }
 }
