@@ -4,20 +4,20 @@
 <div class="space-y-6">
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div class="lg:col-span-8 xl:col-span-9">
-            <div class="overflow-hidden rounded-2xl border border-white/10 bg-black">
+            <div class="overflow-hidden rounded-2xl border border-white/10 bg-black shadow-card">
                 <div class="aspect-video">
                     <iframe src="{{ $video->embed_url }}" class="h-full w-full" frameborder="0" allowfullscreen></iframe>
                 </div>
             </div>
 
-            <div class="mt-4 rounded-2xl border border-white/10 bg-panel p-4 sm:p-5">
-                <h1 class="text-xl font-bold text-white sm:text-2xl">{{ $video->title }}</h1>
+            <div class="mt-4 rounded-2xl border border-white/10 bg-panel/90 p-4 shadow-card sm:p-5">
+                <h1 class="font-display text-xl font-bold text-white sm:text-2xl">{{ $video->title }}</h1>
                 <p class="mt-2 text-sm text-muted">
-                    {{ $video->source_name }}{{ $video->published_at ? ' • ' . $video->published_at->diffForHumans() : '' }}
+                    {{ $video->source_name }}{{ $video->published_at ? ' - ' . $video->published_at->diffForHumans() : '' }}
                 </p>
                 @auth
                     <p class="mt-2 text-xs text-emerald-300">
-                        Rank: {{ optional(auth()->user()->progress)->current_level ?? 1 }} •
+                        Rank: {{ optional(auth()->user()->progress)->current_level ?? 1 }} -
                         Points: {{ optional(auth()->user()->progress)->points ?? 0 }}
                     </p>
                 @endauth
@@ -42,8 +42,8 @@
             </div>
 
             @if(is_array($video->preview_timeline) && count($video->preview_timeline))
-                <div class="rounded-2xl border border-white/10 bg-panel p-4 sm:p-5">
-                    <h2 class="mb-3 text-base font-semibold text-white">Storyboard Preview</h2>
+                <div class="rounded-2xl border border-white/10 bg-panel/90 p-4 shadow-card sm:p-5">
+                    <h2 class="mb-3 font-display text-base font-semibold text-white">Storyboard Preview</h2>
                     <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6">
                         @foreach($video->preview_timeline as $frame)
                             <div class="rounded-lg border border-white/10 bg-black/20 p-2">
@@ -57,7 +57,7 @@
         </div>
 
         <aside class="lg:col-span-4 xl:col-span-3">
-            <div class="rounded-2xl border border-white/10 bg-panel p-3">
+            <div class="rounded-2xl border border-white/10 bg-panel/90 p-3 shadow-card">
                 <h3 class="mb-3 px-1 text-sm font-semibold uppercase tracking-wide text-gray-300">More Embedded Videos</h3>
                 <div class="space-y-3">
                     @forelse($relatedVideos as $related)
