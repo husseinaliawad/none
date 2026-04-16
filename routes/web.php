@@ -24,29 +24,39 @@ use App\Http\Controllers\Admin\ModulePagesController as AdminModulePagesControll
 */
 
 Route::get('/', function () {
-    // if logged in show channels that user subscribed to
-    if (Auth::check()) {
-        $channels = Auth::user()->subscribedChannels()->with('videos')->get()->pluck('videos');
-    } else {
-        //else show all videos
-        $channels = App\Models\Channel::get()->pluck('videos');
+    try {
+        // if logged in show channels that user subscribed to
+        if (Auth::check()) {
+            $channels = Auth::user()->subscribedChannels()->with('videos')->get()->pluck('videos');
+        } else {
+            //else show all videos
+            $channels = App\Models\Channel::get()->pluck('videos');
+        }
+
+        $videos = $channels->flatten()->filter()->unique('id')->values();
+
+        if ($videos->isEmpty()) {
+            $videos = Video::query()->with('channel')->latest()->take(60)->get();
+        }
+
+        $trendingVideos = $videos->sortByDesc('views')->take(18)->values();
+        $latestVideos = $videos->sortByDesc('created_at')->take(24)->values();
+        $recommendedVideos = $videos->shuffle()->take(18)->values();
+        $categories = $videos
+            ->map(fn ($video) => optional($video->channel)->name)
+            ->filter()
+            ->unique()
+            ->take(20)
+            ->values();
+    } catch (\Throwable $e) {
+        report($e);
+        $channels = collect();
+        $videos = collect();
+        $trendingVideos = collect();
+        $latestVideos = collect();
+        $recommendedVideos = collect();
+        $categories = collect();
     }
-
-    $videos = $channels->flatten()->filter()->unique('id')->values();
-
-    if ($videos->isEmpty()) {
-        $videos = Video::query()->with('channel')->latest()->take(60)->get();
-    }
-
-    $trendingVideos = $videos->sortByDesc('views')->take(18)->values();
-    $latestVideos = $videos->sortByDesc('created_at')->take(24)->values();
-    $recommendedVideos = $videos->shuffle()->take(18)->values();
-    $categories = $videos
-        ->map(fn ($video) => optional($video->channel)->name)
-        ->filter()
-        ->unique()
-        ->take(20)
-        ->values();
 
     return view('welcome', compact(
         'channels',
@@ -57,6 +67,8 @@ Route::get('/', function () {
         'categories'
     ));
 });
+
+Route::get('/healthz', fn () => response('ok', 200));
 
 Auth::routes();
 
