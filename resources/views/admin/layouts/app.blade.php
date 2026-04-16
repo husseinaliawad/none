@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ ($pageTitle ?? 'Admin') . ' • ' . config('app.name', 'Laravel') }}</title>
+    <title>{{ ($pageTitle ?? 'Admin') . ' - ' . config('app.name', 'Laravel') }}</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -53,12 +53,26 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
+        html, body {
+            overflow-x: hidden;
+        }
         body {
             background: radial-gradient(circle at top right, #1a2042 0%, #09090f 45%, #06060a 100%);
             color: #e6e9f5;
         }
+        img, video, iframe {
+            max-width: 100%;
+        }
         .scrollbar-thin::-webkit-scrollbar { width: 8px; height: 8px; }
         .scrollbar-thin::-webkit-scrollbar-thumb { background: #303050; border-radius: 9999px; }
+        @media (max-width: 1024px) {
+            table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
     </style>
 
     @stack('head')
