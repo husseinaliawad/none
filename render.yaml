@@ -19,16 +19,10 @@ services:
       - key: QUEUE_CONNECTION
         value: sync
       - key: DB_CONNECTION
-        value: mysql
-      - key: DB_HOST
-        sync: false
-      - key: DB_PORT
-        value: "3306"
+        value: sqlite
       - key: DB_DATABASE
-        sync: false
-      - key: DB_USERNAME
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
+        value: /var/www/html/database/database.sqlite
+      - key: RUN_MIGRATIONS
+        value: "true"
       - key: APP_KEY
         sync: false

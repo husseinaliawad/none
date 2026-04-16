@@ -2,12 +2,19 @@
 set -e
 
 PORT="${PORT:-10000}"
+DB_CONNECTION="${DB_CONNECTION:-sqlite}"
 
 mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache
 
 if [ -z "${APP_KEY:-}" ]; then
   export APP_KEY="base64:$(php -r 'echo base64_encode(random_bytes(32));')"
   echo "APP_KEY is not set. Generated a temporary runtime key for this instance."
+fi
+
+if [ "${DB_CONNECTION}" = "sqlite" ]; then
+  SQLITE_PATH="${DB_DATABASE:-/var/www/html/database/database.sqlite}"
+  mkdir -p "$(dirname "${SQLITE_PATH}")"
+  touch "${SQLITE_PATH}"
 fi
 
 sed -i "s/Listen 80/Listen ${PORT}/" /etc/apache2/ports.conf
@@ -18,7 +25,7 @@ php artisan config:clear || true
 php artisan cache:clear || true
 php artisan optimize || true
 
-if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
+if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then
   php artisan migrate --force
 fi
 
