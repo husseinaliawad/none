@@ -26,6 +26,17 @@ use App\Http\Controllers\Admin\ModulePagesController as AdminModulePagesControll
 
 Route::get('/', function () {
     try {
+        $embeddedVideos = EmbeddedVideo::query()
+            ->where('status', 'published')
+            ->latest('published_at')
+            ->take(18)
+            ->get();
+    } catch (\Throwable $e) {
+        report($e);
+        $embeddedVideos = collect();
+    }
+
+    try {
         // if logged in show channels that user subscribed to
         if (Auth::check()) {
             $channels = Auth::user()->subscribedChannels()->with('videos')->get()->pluck('videos');
@@ -43,11 +54,6 @@ Route::get('/', function () {
         $trendingVideos = $videos->sortByDesc('views')->take(18)->values();
         $latestVideos = $videos->sortByDesc('created_at')->take(24)->values();
         $recommendedVideos = $videos->shuffle()->take(18)->values();
-        $embeddedVideos = EmbeddedVideo::query()
-            ->where('status', 'published')
-            ->latest('published_at')
-            ->take(18)
-            ->get();
         $categories = $videos
             ->map(fn ($video) => optional($video->channel)->name)
             ->filter()
@@ -61,7 +67,6 @@ Route::get('/', function () {
         $trendingVideos = collect();
         $latestVideos = collect();
         $recommendedVideos = collect();
-        $embeddedVideos = collect();
         $categories = collect();
     }
 
