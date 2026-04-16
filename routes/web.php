@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Video;
+use App\Models\EmbeddedVideo;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\EmbeddedVideoController as AdminEmbeddedVideoController;
 use App\Http\Controllers\Admin\VideoImportController as AdminVideoImportController;
@@ -42,6 +43,11 @@ Route::get('/', function () {
         $trendingVideos = $videos->sortByDesc('views')->take(18)->values();
         $latestVideos = $videos->sortByDesc('created_at')->take(24)->values();
         $recommendedVideos = $videos->shuffle()->take(18)->values();
+        $embeddedVideos = EmbeddedVideo::query()
+            ->where('status', 'published')
+            ->latest('published_at')
+            ->take(18)
+            ->get();
         $categories = $videos
             ->map(fn ($video) => optional($video->channel)->name)
             ->filter()
@@ -55,6 +61,7 @@ Route::get('/', function () {
         $trendingVideos = collect();
         $latestVideos = collect();
         $recommendedVideos = collect();
+        $embeddedVideos = collect();
         $categories = collect();
     }
 
@@ -64,6 +71,7 @@ Route::get('/', function () {
         'trendingVideos',
         'latestVideos',
         'recommendedVideos',
+        'embeddedVideos',
         'categories'
     ));
 });
@@ -83,6 +91,16 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/watch/{video}', 'App\Http\Livewire\Video\WatchVideo')->name('video.watch');
+Route::get('/watch/embed/{video:slug}', function (EmbeddedVideo $video) {
+    $relatedVideos = EmbeddedVideo::query()
+        ->where('id', '!=', $video->id)
+        ->where('status', 'published')
+        ->latest('published_at')
+        ->take(10)
+        ->get();
+
+    return view('embed.watch', compact('video', 'relatedVideos'));
+})->name('embed.watch');
 
 Route::get('/channels/{channel}', [App\Http\Controllers\ChannelController::class, 'index'])->name('channel.index');
 

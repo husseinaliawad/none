@@ -15,6 +15,28 @@
 <section class="space-y-8">
     <section>
         <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-lg font-bold tracking-wide text-white sm:text-xl">Embedded Videos</h2>
+            <span class="text-xs uppercase tracking-wide text-muted">Imported</span>
+        </div>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            @forelse($embeddedVideos as $video)
+                <a href="{{ route('embed.watch', $video) }}" class="group block overflow-hidden rounded-xl border border-white/10 bg-panel/80 transition-all duration-200 hover:-translate-y-1 hover:shadow-glow">
+                    <div class="aspect-video overflow-hidden bg-black">
+                        <iframe src="{{ $video->embed_url }}" class="h-full w-full" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                    <div class="p-3">
+                        <h3 class="truncate text-sm font-semibold text-white" title="{{ $video->title }}">{{ $video->title }}</h3>
+                        <p class="mt-1 text-xs text-muted">{{ $video->source_name }}</p>
+                    </div>
+                </a>
+            @empty
+                <p class="col-span-full rounded-xl border border-white/10 bg-panel p-5 text-sm text-muted">No embedded videos available.</p>
+            @endforelse
+        </div>
+    </section>
+
+    <section>
+        <div class="mb-4 flex items-center justify-between">
             <h2 class="text-lg font-bold tracking-wide text-white sm:text-xl">Trending Videos</h2>
             <span class="text-xs uppercase tracking-wide text-muted">Now Hot</span>
         </div>
