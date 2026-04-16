@@ -1,0 +1,110 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Video;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\EmbeddedVideoController as AdminEmbeddedVideoController;
+use App\Http\Controllers\Admin\VideoImportController as AdminVideoImportController;
+use App\Http\Controllers\Admin\UserManagementController as AdminUserManagementController;
+use App\Http\Controllers\Admin\CommentManagementController as AdminCommentManagementController;
+use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
+use App\Http\Controllers\Admin\AnalyticsController as AdminAnalyticsController;
+use App\Http\Controllers\Admin\ModulePagesController as AdminModulePagesController;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+
+Route::get('/', function () {
+    // if logged in show channels that user subscribed to
+    if (Auth::check()) {
+        $channels = Auth::user()->subscribedChannels()->with('videos')->get()->pluck('videos');
+    } else {
+        //else show all videos
+        $channels = App\Models\Channel::get()->pluck('videos');
+    }
+
+    $videos = $channels->flatten()->filter()->unique('id')->values();
+
+    if ($videos->isEmpty()) {
+        $videos = Video::query()->with('channel')->latest()->take(60)->get();
+    }
+
+    $trendingVideos = $videos->sortByDesc('views')->take(18)->values();
+    $latestVideos = $videos->sortByDesc('created_at')->take(24)->values();
+    $recommendedVideos = $videos->shuffle()->take(18)->values();
+    $categories = $videos
+        ->map(fn ($video) => optional($video->channel)->name)
+        ->filter()
+        ->unique()
+        ->take(20)
+        ->values();
+
+    return view('welcome', compact(
+        'channels',
+        'videos',
+        'trendingVideos',
+        'latestVideos',
+        'recommendedVideos',
+        'categories'
+    ));
+});
+
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/channel/{channel}/edit', [App\Http\Controllers\ChannelController::class, 'edit'])->name('channel.edit');
+
+    Route::get('/videos/{channel}/create', 'App\Http\Livewire\Video\CreateVideo')->name('video.create');
+    Route::get('/videos/{channel}/{video}/edit', 'App\Http\Livewire\Video\EditVideo')->name('video.edit');
+    Route::get('/videos/{channel}', 'App\Http\Livewire\Video\AllVideo')->name('video.all');
+});
+
+Route::get('/watch/{video}', 'App\Http\Livewire\Video\WatchVideo')->name('video.watch');
+
+Route::get('/channels/{channel}', [App\Http\Controllers\ChannelController::class, 'index'])->name('channel.index');
+
+Route::get('/search/', [App\Http\Controllers\SearchController::class, 'search'])->name('search');
+
+Route::prefix('admin')
+    ->name('admin.')
+    ->middleware(['auth', 'role:admin,editor'])
+    ->group(function () {
+        Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        Route::post('/videos/bulk-action', [AdminEmbeddedVideoController::class, 'bulkAction'])->name('videos.bulk-action');
+        Route::post('/videos/preview', [AdminEmbeddedVideoController::class, 'preview'])->name('videos.preview');
+        Route::patch('/videos/{video}/publish', [AdminEmbeddedVideoController::class, 'publish'])->name('videos.publish');
+        Route::patch('/videos/{video}/unpublish', [AdminEmbeddedVideoController::class, 'unpublish'])->name('videos.unpublish');
+        Route::resource('videos', AdminEmbeddedVideoController::class);
+
+        Route::get('/users', [AdminUserManagementController::class, 'index'])->name('users.index');
+        Route::get('/users/{user}', [AdminUserManagementController::class, 'show'])->name('users.show');
+
+        Route::get('/comments', [AdminCommentManagementController::class, 'index'])->name('comments.index');
+        Route::delete('/comments/{comment}', [AdminCommentManagementController::class, 'destroy'])->name('comments.destroy');
+
+        Route::get('/settings', [AdminSettingsController::class, 'index'])->name('settings.index');
+        Route::put('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
+
+        Route::get('/imports', [AdminVideoImportController::class, 'index'])->name('imports.index');
+        Route::post('/imports', [AdminVideoImportController::class, 'store'])->name('imports.store');
+        Route::get('/imports/{import}', [AdminVideoImportController::class, 'show'])->name('imports.show');
+
+        Route::get('/analytics', [AdminAnalyticsController::class, 'index'])->name('analytics.index');
+        Route::get('/categories', [AdminModulePagesController::class, 'categories'])->name('categories.index');
+        Route::get('/tags', [AdminModulePagesController::class, 'tags'])->name('tags.index');
+        Route::get('/reports', [AdminModulePagesController::class, 'reports'])->name('reports.index');
+        Route::get('/ads', [AdminModulePagesController::class, 'ads'])->name('ads.index');
+        Route::get('/roles', [AdminModulePagesController::class, 'roles'])->name('roles.index');
+    });

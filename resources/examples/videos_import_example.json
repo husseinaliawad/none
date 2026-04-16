@@ -1,0 +1,22 @@
+[
+  {
+    "title": "Sample Video One",
+    "slug": "sample-video-one",
+    "description": "Professional sample video",
+    "thumbnail_url": "https://partner1.com/thumbs/abc.jpg",
+    "embed_url": "https://partner1.com/embed/abc123",
+    "source_name": "Partner 1",
+    "source_video_id": "abc123",
+    "category": "Education",
+    "tags": ["tutorial", "beginner"],
+    "status": "published",
+    "published_at": "2026-04-15 12:00:00"
+  },
+  {
+    "title": "Sample Video Two",
+    "embed_url": "https://player.vimeo.com/video/999888",
+    "category": "Tech",
+    "tags": ["api", "imports"],
+    "status": "draft"
+  }
+]
