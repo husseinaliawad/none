@@ -32,7 +32,12 @@ use App\Services\PersonalizedFeedService;
 */
 
 Route::get('/', function () {
-    $forYouFeed = app(PersonalizedFeedService::class)->buildForUser(auth()->user(), 18);
+    try {
+        $forYouFeed = app(PersonalizedFeedService::class)->buildForUser(auth()->user(), 18);
+    } catch (\Throwable $e) {
+        report($e);
+        $forYouFeed = collect();
+    }
 
     try {
         $embeddedVideos = EmbeddedVideo::query()
