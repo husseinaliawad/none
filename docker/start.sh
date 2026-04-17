@@ -3,6 +3,7 @@ set -e
 
 PORT="${PORT:-10000}"
 DB_CONNECTION="${DB_CONNECTION:-sqlite}"
+FORCE_SQLITE="${FORCE_SQLITE:-true}"
 
 mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache
 
@@ -11,8 +12,17 @@ if [ -z "${APP_KEY:-}" ]; then
   echo "APP_KEY is not set. Generated a temporary runtime key for this instance."
 fi
 
-if [ "${DB_CONNECTION}" = "sqlite" ]; then
+if [ "${FORCE_SQLITE}" = "true" ] || [ "${DB_CONNECTION}" = "sqlite" ]; then
+  export DB_CONNECTION="sqlite"
+  unset DATABASE_URL
+  unset DB_HOST
+  unset DB_PORT
+  unset DB_USERNAME
+  unset DB_PASSWORD
+  unset DB_SOCKET
+
   SQLITE_PATH="${DB_DATABASE:-/var/www/html/database/database.sqlite}"
+  export DB_DATABASE="${SQLITE_PATH}"
   mkdir -p "$(dirname "${SQLITE_PATH}")"
   touch "${SQLITE_PATH}"
 fi

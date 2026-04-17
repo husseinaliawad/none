@@ -22,6 +22,10 @@ services:
         value: sqlite
       - key: DB_DATABASE
         value: /var/www/html/database/database.sqlite
+      - key: FORCE_SQLITE
+        value: "true"
+      - key: DATABASE_URL
+        value: ""
       - key: RUN_MIGRATIONS
         value: "true"
       - key: APP_KEY
