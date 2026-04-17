@@ -17,6 +17,7 @@ use App\Http\Controllers\EmbeddedWatchController;
 use App\Http\Controllers\FanGroupController;
 use App\Http\Controllers\ChartsController;
 use App\Http\Controllers\ShortsController;
+use App\Http\Controllers\GifController;
 use App\Services\PersonalizedFeedService;
 
 /*
@@ -116,6 +117,7 @@ Route::get('/fan-groups/{group:slug}', [FanGroupController::class, 'show'])->nam
 Route::post('/fan-groups/{group:slug}/join', [FanGroupController::class, 'join'])->name('fan-groups.join');
 Route::get('/charts', [ChartsController::class, 'index'])->name('charts.index');
 Route::get('/shorts', [ShortsController::class, 'index'])->name('shorts.index');
+Route::get('/gifs', [GifController::class, 'index'])->name('gifs.index');
 
 Route::prefix('admin')
     ->name('admin.')

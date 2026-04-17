@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\EmbeddedThumbnailResolver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -68,5 +69,10 @@ class EmbeddedVideo extends Model
         return $this->morphToMany(Tag::class, 'taggable')
             ->withPivot('score')
             ->withTimestamps();
+    }
+
+    public function getResolvedThumbnailUrlAttribute(): ?string
+    {
+        return app(EmbeddedThumbnailResolver::class)->resolve($this);
     }
 }
